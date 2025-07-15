@@ -1,0 +1,348 @@
+---
+// src/components/Live2D.astro
+// 紧凑竖排面板解决方案
+---
+
+<style is:global>
+  /* 看板娘容器 - 紧凑布局 */
+  #waifu {
+    position: fixed;
+    z-index: 10000 !important;
+    pointer-events: auto !important;
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column; /* 竖向排列 */
+    align-items: flex-end; /* 右侧对齐 */
+    gap: 8px; /* 减少间距 */
+  }
+  
+  /* 人物模型 */
+  #live2d {
+    position: relative;
+    z-index: 10001;
+    cursor: move;
+    transform: translate3d(0, 0, 0);
+    width: 200px;
+    height: 200px;
+    order: 2; /* 人物在下方 */
+  }
+  
+  /* 面板容器 */
+  .panel-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* 减少间距 */
+    width: 220px; /* 与人物宽度匹配 */
+    order: 1; /* 面板在上方 */
+  }
+  
+  /* 面板 - 竖向排列 */
+  #waifu-tips {
+    position: relative !important;
+    z-index: 10002 !important;
+    width: 100%;
+    max-height: 150px;
+    overflow-y: auto;
+    margin: 0 !important;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    font-size: 13px;
+    line-height: 1.5;
+    color: #333;
+    transform: none !important;
+    transition: all 0.3s ease;
+  }
+  
+  /* 面板滚动条美化 */
+  #waifu-tips::-webkit-scrollbar {
+    width: 5px;
+  }
+  
+  #waifu-tips::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 3px;
+  }
+  
+  #waifu-tips::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: 3px;
+  }
+  
+  /* 工具按钮容器 */
+  #waifu-tool {
+    position: relative !important;
+    z-index: 10003 !important;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 !important;
+    transform: none !important;
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  /* 工具按钮样式 */
+  .waifu-tool-btn {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 6px;
+    height: 36px;
+    width: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    font-size: 16px;
+    color: #4b5563;
+  }
+  
+  .waifu-tool-btn:hover {
+    background: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+    color: #1e40af;
+  }
+  
+  /* 移动端隐藏 */
+  @media (max-width: 1024px) {
+    #waifu {
+      display: none !important;
+    }
+  }
+  
+  /* 加载指示器 */
+  #live2d-loader {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    width: 44px;
+    height: 44px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .loader-spinner {
+    width: 26px;
+    height: 26px;
+    border: 3px solid rgba(59, 130, 246, 0.2);
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  /* 响应式调整 */
+  @media (max-width: 1200px) {
+    #waifu {
+      transform: scale(0.85);
+      transform-origin: bottom right;
+      bottom: 10px;
+      right: 10px;
+    }
+  }
+</style>
+
+<div id="live2d-loader">
+  <div class="loader-spinner"></div>
+</div>
+
+<script>
+(function() {
+  // 动态配置对象
+  const live2dConfig = {
+    path: {
+      homePath: '/',
+      modelPath: 'https://cdn3.xcqcoo.top/jsd/gh/QC3284/hugo-static-resource@latest/live2d/live2d-moc3/',
+      cssPath: 'https://cdn3.xcqcoo.top/jsd/gh/letere-gzj/live2d-widget-v3@latest/waifu.css',
+      tipsJsonPath: 'https://cdn3.xcqcoo.top/jsd/gh/QC3284/live2d-widget-v3@latest/waifu-tips.json',
+      tipsJsPath: 'https://cdn3.xcqcoo.top/jsd/gh/letere-gzj/live2d-widget-v3@latest/waifu-tips.js',
+      live2dCorePath: 'https://cdn3.xcqcoo.top/jsd/gh/letere-gzj/live2d-widget-v3@latest/Core/live2dcubismcore.js',
+      live2dSdkPath: 'https://cdn3.xcqcoo.top/jsd/gh/letere-gzj/live2d-widget-v3@latest/live2d-sdk.js'
+    },
+    tools: ["hitokoto", "asteroids", "express", "switch-model", "switch-texture", "photo", "info", "quit"],
+    drag: { enable: true, direction: ["x", "y"] },
+    switchType: "order"
+  };
+
+  // 资源加载器
+  const resourceLoader = (url, type) => {
+    return new Promise((resolve, reject) => {
+      if (type === 'css') {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = url;
+        link.onload = () => resolve();
+        link.onerror = reject;
+        document.head.appendChild(link);
+      } else {
+        const script = document.createElement('script');
+        script.src = url;
+        script.onload = () => resolve();
+        script.onerror = reject;
+        document.head.appendChild(script);
+      }
+    });
+  };
+
+  // 响应式检测
+  const initLive2D = () => {
+    if (window.innerWidth < 1024) {
+      document.getElementById('live2d-loader')?.remove();
+      return;
+    }
+    
+    // 检查是否已加载
+    if (document.querySelector('#waifu')) {
+      document.getElementById('live2d-loader')?.remove();
+      return;
+    }
+    
+    Promise.all([
+      resourceLoader(live2dConfig.path.cssPath, 'css'),
+      resourceLoader(live2dConfig.path.live2dCorePath, 'js'),
+      resourceLoader(live2dConfig.path.live2dSdkPath, 'js'),
+      resourceLoader(live2dConfig.path.tipsJsPath, 'js')
+    ]).then(() => {
+      if (typeof initWidget === 'function') {
+        // 保存原始初始化函数
+        const originalInitWidget = initWidget;
+        
+        // 覆盖初始化函数以添加紧凑布局
+        initWidget = function(config) {
+          // 调用原始初始化函数
+          originalInitWidget(config);
+          
+          // 等待元素渲染完成
+          setTimeout(() => {
+            const waifuElement = document.getElementById('waifu');
+            const live2dElement = document.getElementById('live2d');
+            const tipsElement = document.getElementById('waifu-tips');
+            const toolElement = document.getElementById('waifu-tool');
+            
+            if (waifuElement && live2dElement && tipsElement && toolElement) {
+              // 创建紧凑的面板容器
+              const panelContainer = document.createElement('div');
+              panelContainer.className = 'panel-container';
+              
+              // 移动面板和工具到新容器
+              panelContainer.appendChild(tipsElement);
+              panelContainer.appendChild(toolElement);
+              
+              // 清空原容器并添加面板容器和人物
+              waifuElement.innerHTML = '';
+              waifuElement.appendChild(panelContainer);
+              waifuElement.appendChild(live2dElement);
+              
+              // 设置紧凑的初始位置
+              waifuElement.style.bottom = '20px';
+              waifuElement.style.right = '20px';
+              
+              // 添加拖拽功能
+              let isDragging = false;
+              let offsetX, offsetY;
+              
+              // 鼠标按下时开始拖拽
+              live2dElement.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                const rect = waifuElement.getBoundingClientRect();
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+                waifuElement.style.cursor = 'grabbing';
+                waifuElement.style.transition = 'none';
+              });
+              
+              // 鼠标移动时更新位置
+              document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                
+                // 计算新位置
+                let x = e.clientX - offsetX;
+                let y = e.clientY - offsetY;
+                
+                // 获取整个看板娘元素的尺寸
+                const waifuWidth = waifuElement.offsetWidth;
+                const waifuHeight = waifuElement.offsetHeight;
+                
+                // 边界检查
+                const maxX = window.innerWidth - waifuWidth;
+                const maxY = window.innerHeight - waifuHeight;
+                
+                x = Math.max(0, Math.min(x, maxX));
+                y = Math.max(0, Math.min(y, maxY));
+                
+                // 应用新位置
+                waifuElement.style.left = `${x}px`;
+                waifuElement.style.top = `${y}px`;
+                waifuElement.style.right = 'auto';
+                waifuElement.style.bottom = 'auto';
+              });
+              
+              // 鼠标释放时停止拖拽
+              document.addEventListener('mouseup', () => {
+                isDragging = false;
+                waifuElement.style.cursor = 'grab';
+                waifuElement.style.transition = 'all 0.3s ease';
+              });
+              
+              // 移除加载指示器
+              document.getElementById('live2d-loader')?.remove();
+            }
+          }, 100);
+        };
+        
+        // 调用修改后的初始化函数
+        initWidget({
+          homePath: live2dConfig.path.homePath,
+          waifuPath: live2dConfig.path.tipsJsonPath,
+          cdnPath: live2dConfig.path.modelPath,
+          tools: live2dConfig.tools,
+          dragEnable: live2dConfig.drag.enable,
+          dragDirection: live2dConfig.drag.direction,
+          switchType: live2dConfig.switchType
+        });
+      }
+    }).catch(error => {
+      console.error('Live2D加载失败:', error);
+      document.getElementById('live2d-loader')?.remove();
+    });
+  };
+
+  // 初始化函数
+  const init = () => {
+    if (document.readyState === 'complete') {
+      setTimeout(initLive2D, 300);
+    } else {
+      window.addEventListener('load', () => setTimeout(initLive2D, 300));
+    }
+  };
+
+  // 确保只在客户端执行
+  if (typeof window !== 'undefined') {
+    init();
+    
+    // 响应式处理
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 1024 && !document.querySelector('#waifu')) {
+        initLive2D();
+      }
+    });
+  }
+})();
+</script>
