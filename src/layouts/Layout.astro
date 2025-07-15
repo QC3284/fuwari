@@ -4,7 +4,6 @@ import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 
 import ConfigCarrier from "@components/ConfigCarrier.astro";
-import Live2D from "@components/Live2D.astro";
 import { profileConfig, siteConfig } from "@/config";
 import {
 	AUTO_MODE,
@@ -157,7 +156,7 @@ const bannerOffset =
 
 		<!-- increase the page height during page transition to prevent the scrolling animation from jumping -->
 		<div id="page-height-extend" class="hidden h-[300vh]"></div>
-		<Live2D />
+		<script src="https://cdn3.xcqcoo.top/jsd/gh/QC3284/233@latest/blog_live2d_v6.2.2.js" defer></script>
 	</body>
 </html>
 
@@ -168,17 +167,6 @@ const bannerOffset =
 }}>
 @tailwind components;
 @layer components {
-	#waifu {
-      position: fixed;
-      right: 0;
-      bottom: 0;
-      z-index: 9999;
-      pointer-events: auto !important;
-    }
-    
-    @media (max-width: 768px) {
-      #waifu { display: none !important; }
-    }
 	.enable-banner.is-home #banner-wrapper {
 		@apply h-[var(--banner-height-home)] translate-y-[var(--banner-height-extend)]
 	}
