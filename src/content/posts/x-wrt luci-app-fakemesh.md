@@ -1,9 +1,9 @@
 ---
-title: x-wrt luci-app-fakemesh
-published: 2025-07-11
-description: 'x-wrt luci-app-fakemesh介绍及使用教程'
+title: X-wrt luci-app-fakemesh
+published: 2024-08-09
+description: 'X-wrt luci-app-fakemesh介绍及使用教程'
 image: './assets/images/x-wrt-logo-min.svg'
-tags: ['x-wrt', "X-WRT", "openwrt", "mesh", "luci-app-fakemesh", "技术分享", "网络", "路由器"]
+tags: ['x-wrt', "X-WRT", "openwrt", "mesh", "luci-app-fakemesh", "教程", "技术分享", "网络", "路由器"]
 category: '路由器'
 draft: false 
 lang: ''

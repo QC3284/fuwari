@@ -1,9 +1,9 @@
 ---
 title: 如何编译X-WRT
-published: 2025-07-11
+published: 2024-08-09
 description: 'X-WRT编译教程'
 image: './assets/images/x-wrt-logo-min.svg'
-tags: ['x-wrt', "X-WRT", "openwrt", "编译", "技术分享", "网络", "路由器"]
+tags: ['x-wrt', "X-WRT", "openwrt", "编译", "教程", "技术分享", "网络", "路由器"]
 category: '路由器'
 draft: false 
 lang: ''
