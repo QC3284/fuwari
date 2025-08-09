@@ -42,9 +42,8 @@ As the creator of QC3284's Blog, I (QC3284) am dedicated to fostering an inclusi
 
 ## 📣 Reporting Violations  
 ### If you experience or witness misconduct:  
-1. **Email directly**: `report@qc3284blog.com` (confidential)  
-2. **Anonymous form**: [Link to encrypted form]  
-3. **For urgent concerns**: DM @QC3284 on Twitter/X  
+1. **Email directly**: `qc3284@xcqcoo.top` (confidential)  
+2. **For urgent concerns**: DM @QC3284 on Twitter/X  
 
 ### What happens next:  
 - Initial response within **48 hours**  
