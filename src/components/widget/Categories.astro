@@ -2,10 +2,18 @@
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
 import { getCategoryList } from "../../utils/content-utils";
+import { getCategoryUrl } from "../../utils/url-utils";
 import ButtonLink from "../control/ButtonLink.astro";
 import WidgetLayout from "./WidgetLayout.astro";
 
-const categories = await getCategoryList();
+const categoryList = await getCategoryList();
+const categories = categoryList
+	.filter(category => category && typeof category === 'object' && category.name && typeof category.name === 'string' && category.name.trim())
+	.map(category => ({
+		...category,
+		name: category.name.trim(),
+		url: getCategoryUrl(category.name.trim())
+	}));
 
 const COLLAPSED_HEIGHT = "7.5rem";
 const COLLAPSE_THRESHOLD = 5;
@@ -27,9 +35,9 @@ const style = Astro.props.style;
         <ButtonLink
             url={c.url}
             badge={String(c.count)}
-            label={`View all posts in the ${c.name.trim()} category`}
+            label={`View all posts in the ${c.name} category`}
         >
-            {c.name.trim()}
+            {c.name}
         </ButtonLink>
     )}
 </WidgetLayout>
