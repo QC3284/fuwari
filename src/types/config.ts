@@ -3,12 +3,15 @@ import type { AUTO_MODE, DARK_MODE, LIGHT_MODE } from "@constants/constants";
 export type SiteConfig = {
 	title: string;
 	subtitle: string;
+	description?: string;
+	keywords?: string[];
 
 	lang: string;
 
 	themeColor: {
 		hue: number;
 		fixed: boolean;
+		forceDarkMode?: boolean;
 	};
 	banner: {
 		enable: boolean;
@@ -19,6 +22,15 @@ export type SiteConfig = {
 			text: string;
 			url?: string;
 		};
+	};
+	background: {
+		enable: boolean;
+		src: string;
+		position?: "top" | "center" | "bottom";
+		size?: "cover" | "contain" | "auto";
+		repeat?: "no-repeat" | "repeat" | "repeat-x" | "repeat-y";
+		attachment?: "fixed" | "scroll" | "local";
+		opacity?: number;
 	};
 	toc: {
 		enable: boolean;
@@ -38,7 +50,6 @@ export enum LinkPreset {
 	Home = 0,
 	Archive = 1,
 	About = 2,
-	Friends = 3,
 }
 
 export type NavBarLink = {
@@ -68,6 +79,19 @@ export type LicenseConfig = {
 	url: string;
 };
 
+export type ImageFallbackConfig = {
+	enable: boolean;
+	originalDomain: string;
+	fallbackDomain: string;
+};
+
+export type UmamiConfig = {
+	enable: boolean;
+	baseUrl: string;
+	shareId: string;
+	timezone: string;
+};
+
 export type LIGHT_DARK_MODE =
 	| typeof LIGHT_MODE
 	| typeof DARK_MODE
@@ -81,7 +105,6 @@ export type BlogPostData = {
 	tags: string[];
 	draft?: boolean;
 	image?: string;
-	category?: string;
 	prevTitle?: string;
 	prevSlug?: string;
 	nextTitle?: string;
@@ -90,4 +113,9 @@ export type BlogPostData = {
 
 export type ExpressiveCodeConfig = {
 	theme: string;
+};
+
+export type GitHubEditConfig = {
+	enable: boolean;
+	baseUrl: string;
 };
